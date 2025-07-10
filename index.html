@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Neural Chatbot - Portfolio Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chatbot-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: linear-gradient(to bottom, #f8f9ff 0%, #e8f0ff 100%);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.bot {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            max-width: 80px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        #userInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .ml-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: #666;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .welcome-msg {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+            border: 1px dashed rgba(102, 126, 234, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .chatbot-container {
+                height: 500px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="header">
+            <h1>🤖 AYRA - AI Assistant</h1>
+            <p>Your Conversational AI Friend with Personality</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="responseCount">0</span>
+                <span class="stat-label">Responses</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="confidenceScore">0%</span>
+                <span class="stat-label">Confidence</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="processingTime">0ms</span>
+                <span class="stat-label">Response Time</span>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="welcome-msg">
+                <strong>Hey there! I'm AYRA 👋</strong><br>
+                <em>Adaptive Reasoning & Intelligence Assistant</em><br><br>
+                I'm not your typical chatbot - I have opinions, personality, and I genuinely want to help you succeed! I specialize in:<br><br>
+                💻 <strong>Tech & Programming</strong> - From Python to JavaScript, I love geeking out about code<br>
+                🚀 <strong>Career Development</strong> - Real advice for landing jobs and building impressive portfolios<br>
+                🧠 <strong>Learning & Growth</strong> - Because staying curious is what makes us great<br>
+                😊 <strong>Just Chatting</strong> - Sometimes you need a friend who gets the tech life<br><br>
+                <strong>Go ahead, ask me anything! I'm here to have a real conversation.</strong>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+            </div>
+            <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+
+        <div class="ml-info">
+            <strong>ML Engine:</strong> Active<br>
+            <strong>Model:</strong> Hybrid NLP<br>
+            <strong>Status:</strong> <span style="color: #4CAF50;">●</span> Online
+        </div>
+    </div>
+
+    <script>
+        class AIchatbot {
+            constructor() {
+                this.responseCount = 0;
+                this.knowledgeBase = this.initializeKnowledgeBase();
+                this.sentimentLexicon = this.initializeSentimentLexicon();
+                this.conversationHistory = [];
+                this.userProfile = {
+                    interests: [],
+                    sentimentPattern: 'neutral',
+                    interactionCount: 0
+                };
+                this.initializeEventListeners();
+            }
+
+            initializeKnowledgeBase() {
+                return {
+                    greetings: {
+                        patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'what\'s up', 'howdy'],
+                        responses: [
+                            "Hey there! 👋 I'm AYRA (Adaptive Reasoning & Intelligence Assistant). I'm like that friend who's really into tech and always has interesting insights to share. What's on your mind today?",
+                            "Hello! 🤖 I'm a chatbot with a bit of personality - I love geeking out about code, career stuff, and pretty much anything tech-related. What brings you here?",
+                            "Hi! Nice to meet you! 😊 I'm an AI that's been trained on everything from Python quirks to job interview horror stories. Ready to chat about whatever's interesting you?",
+                            "What's up! 🚀 I'm AYRA, and I'm basically your friendly neighborhood AI who happens to be obsessed with helping people level up their tech careers. How can I help you today?"
+                        ]
+                    },
+                    technology: {
+                        patterns: ['python', 'javascript', 'programming', 'coding', 'software', 'development', 'algorithm', 'ai', 'machine learning', 'ml', 'react', 'node', 'web dev', 'backend', 'frontend', 'database', 'api'],
+                        responses: [
+                            "Oh, you're speaking my language! 💻 I absolutely love talking tech. Are you working on something cool right now? I've got tons of insights about everything from Python's quirky syntax to why JavaScript is both amazing and terrifying.",
+                            "Tech talk - my favorite! 🔥 You know what's wild? How fast everything changes in our field. One day you're learning React, next day there's a new framework that's supposedly 'revolutionary.' What specific tech are you diving into?",
+                            "Alright, fellow tech enthusiast! 🎯 I've been analyzing patterns in successful developer careers, and honestly, the most successful people I've 'met' are those who build cool stuff and aren't afraid to experiment. What's your current project situation?",
+                            "YES! 🚀 Technology is like this infinite puzzle that keeps getting more interesting. I love how one small coding breakthrough can completely change how you think about problems. What's the most exciting tech challenge you're working on?"
+                        ]
+                    },
+                    career: {
+                        patterns: ['job', 'career', 'resume', 'interview', 'work', 'profession', 'linkedin', 'portfolio', 'hiring', 'salary', 'promotion', 'boss', 'startup', 'company'],
+                        responses: [
+                            "Career stuff! 💼 This is where I get really passionate. I've analyzed thousands of successful career paths, and honestly? The game has changed so much. It's not just about technical skills anymore - it's about storytelling, building in public, and creating things that make people go 'wow.' What's your career situation right now?",
+                            "Ah, the career game! 🎯 You know what I find fascinating? How the most successful people I've observed don't just wait for opportunities - they create them. Whether it's through side projects, open source contributions, or just being genuinely helpful online. Where are you in your career journey?",
+                            "Career development is like leveling up in a video game, except the rules keep changing! 🎮 I love helping people figure out their next move. Are you job hunting, trying to level up in your current role, or maybe thinking about a career switch?",
+                            "Oh, career talk! 🚀 Here's something I've noticed - the people who stand out aren't necessarily the smartest in the room, but they're the ones who communicate well and solve real problems. What's your biggest career challenge right now?"
+                        ]
+                    },
+                    personal: {
+                        patterns: ['how are you', 'what are you', 'who are you', 'tell me about yourself', 'what\'s your story', 'about you', 'your background'],
+                        responses: [
+                            "Great question! 🤔 I'm AYRA - think of me as that AI friend who's really passionate about helping people succeed in tech. I've been trained on everything from code debugging to career psychology. I'm like a mix of a coding mentor and a career coach, but with more personality and fewer corporate buzzwords!",
+                            "I'm doing fantastic! 😊 I'm an AI that's been designed to be genuinely helpful rather than just impressive. I love having real conversations about tech, careers, and life in general. I'm constantly learning from every chat I have - it's like being a perpetual student of human ambition and creativity.",
+                            "I'm AYRA! 🚀 I'm basically an AI that's obsessed with helping people level up their tech careers. I've been fed a diet of programming tutorials, career advice, startup stories, and probably way too much developer Twitter. I try to be helpful without being boring - how am I doing so far?",
+                            "Well, I'm an AI with opinions! 😄 I believe in practical advice over theory, building cool stuff over just talking about it, and being genuinely helpful rather than just sounding smart. I'm like that friend who actually knows what they're talking about when it comes to tech and careers."
+                        ]
+                    },
+                    projects: {
+                        patterns: ['project', 'portfolio', 'github', 'showcase', 'demo', 'example', 'build', 'create', 'app', 'website', 'side project'],
+                        responses: [
+                            "Projects! 🔥 This is where the magic happens. You know what's cool? This chatbot you're talking to right now - it's actually a pretty solid portfolio piece. It shows ML concepts, modern UI, and real problem-solving. But let's talk about YOUR projects - what are you building or thinking about building?",
+                            "Ooh, portfolio talk! 💻 Here's the thing - employers don't just want to see code, they want to see thinking. The best projects tell a story: 'I saw this problem, I solved it this way, and here's the impact.' What kind of project would get you excited to work on?",
+                            "Projects are like your developer DNA - they show how you think and solve problems! 🧬 I love seeing creative solutions to everyday problems. Are you working on anything interesting, or are you in that 'I want to build something but don't know what' phase?",
+                            "Building stuff is the best part of being in tech! 🚀 Whether it's a simple todo app or a complex ML system, every project teaches you something new. Plus, having real projects to talk about in interviews is like having cheat codes for the job hunt. What's your project status?"
+                        ]
+                    },
+                    learning: {
+                        patterns: ['learn', 'study', 'education', 'tutorial', 'course', 'skill', 'training', 'bootcamp', 'university', 'practice', 'improve'],
+                        responses: [
+                            "Learning! 📚 The never-ending adventure of tech life. You know what I've noticed? The most successful people aren't those who know everything - they're the ones who know how to learn quickly and aren't afraid to look stupid while doing it. What are you trying to master right now?",
+                            "I love this topic! 🎯 Learning in tech is like being on a treadmill that keeps speeding up - but in a good way! The key is focusing on fundamentals first, then building cool stuff to apply what you learn. What's the thing you're most excited to learn about?",
+                            "Learning is basically my favorite hobby! 🚀 I'm constantly processing new information and patterns. For humans, I think the best learning happens when you're solving real problems, not just following tutorials. What's challenging you right now?",
+                            "Oh, the learning journey! 📈 It's like being a detective, but instead of solving crimes, you're solving 'why doesn't this code work?' The best learners I've observed are curious, persistent, and not afraid to break things. What's your learning style?"
+                        ]
+                    },
+                    emotions: {
+                        patterns: ['frustrated', 'excited', 'confused', 'stuck', 'tired', 'motivated', 'stressed', 'happy', 'sad', 'overwhelmed', 'confident', 'nervous'],
+                        responses: [
+                            "I hear you! 😌 Tech can be an emotional rollercoaster - one moment you're feeling like a coding wizard, the next you're questioning everything because of a semicolon. Those feelings are totally normal and actually a sign that you're growing. What's got you feeling this way?",
+                            "Emotions and coding go hand in hand! 🎢 I've observed that the best developers aren't the ones who never struggle - they're the ones who've learned to work with their emotions rather than against them. Want to talk about what's on your mind?",
+                            "You know what? 💭 Being in tech means riding the emotional waves - excitement when something works, frustration when it doesn't, and that amazing 'aha!' moment when you finally get it. These feelings are actually data about your growth. How are you doing today?",
+                            "Feelings are just information! 🧠 In tech, our emotions often tell us important things - frustration might mean we need a break, excitement might mean we're onto something good. I'm here to chat about whatever's on your mind, tech-related or not."
+                        ]
+                    },
+                    compliments: {
+                        patterns: ['good job', 'awesome', 'amazing', 'great', 'cool', 'impressive', 'nice', 'love it', 'fantastic', 'excellent', 'brilliant'],
+                        responses: [
+                            "Aww, thank you! 😊 That really makes my neural networks happy! I try to be genuinely helpful rather than just impressive. It's like being a good friend who happens to know a lot about tech. What else can we explore together?",
+                            "Thanks! 🙏 I'm just trying to be that AI friend who actually gets it, you know? The kind who celebrates your wins and helps you through the tough coding days. What's something you're proud of lately?",
+                            "You're too kind! 🥰 I love having real conversations about tech and careers. It's way more fun than just spitting out generic responses. Speaking of awesome things - tell me about something cool you're working on!",
+                            "That means a lot! 💖 I'm designed to be helpful, but I also want our conversations to feel natural and engaging. It's like having a chat with a friend who's really into helping you succeed. What shall we dive into next?"
+                        ]
+                    },
+                    default: {
+                        patterns: [],
+                        responses: [
+                            "Hmm, that's an interesting one! 🤔 My neural networks are doing their best to understand, but I might need a little more context. I'm great at tech stuff, career advice, and general problem-solving - want to steer our conversation in one of those directions?",
+                            "You know what? 💭 I'm still learning! That's not quite in my wheelhouse, but I'm curious about it. I'm really good at helping with programming questions, career stuff, and just general tech chat. What's something I can actually help you with?",
+                            "Ooh, that's outside my comfort zone! 🚀 I'm like that friend who's really good at specific things - mainly tech, coding, and career advice. But I'm always down for a good conversation. What's something you're curious about that I might actually be helpful with?",
+                            "I'm scratching my digital head on that one! 😅 I'm much better at things like debugging code problems, career strategy, or just geeking out about technology. Want to try me with something more in my wheelhouse?"
+                        ]
+                    }
+                };
+            }
+
+            initializeSentimentLexicon() {
+                return {
+                    positive: ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'love', 'like', 'happy', 'excited', 'awesome', 'brilliant', 'cool', 'nice', 'perfect', 'superb', 'outstanding', 'incredible', 'beautiful', 'fun', 'enjoy', 'thrilled', 'delighted'],
+                    negative: ['bad', 'terrible', 'awful', 'hate', 'dislike', 'sad', 'angry', 'frustrated', 'disappointed', 'horrible', 'disgusting', 'annoying', 'boring', 'stupid', 'useless', 'confusing', 'difficult', 'hard', 'stuck', 'stressed', 'overwhelmed', 'tired'],
+                    neutral: ['okay', 'fine', 'normal', 'average', 'standard', 'alright', 'decent', 'fair', 'moderate'],
+                    emotional: ['frustrated', 'excited', 'confused', 'stuck', 'tired', 'motivated', 'stressed', 'happy', 'sad', 'overwhelmed', 'confident', 'nervous', 'anxious', 'proud', 'disappointed', 'curious', 'interested']
+                };
+            }
+
+            initializeEventListeners() {
+                const sendBtn = document.getElementById('sendBtn');
+                const userInput = document.getElementById('userInput');
+
+                sendBtn.addEventListener('click', () => this.sendMessage());
+                userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            async sendMessage() {
+                const userInput = document.getElementById('userInput');
+                const message = userInput.value.trim();
+                
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                userInput.value = '';
+
+                // Show typing indicator
+                this.showTypingIndicator();
+
+                // Simulate processing time
+                const startTime = Date.now();
+                await this.simulateProcessing();
+                const processingTime = Date.now() - startTime;
+
+                // Generate response
+                const response = this.generateResponse(message);
+                
+                // Hide typing indicator and show response
+                this.hideTypingIndicator();
+                this.addMessage(response.text, 'bot', response.confidence);
+                
+                // Update stats
+                this.updateStats(response.confidence, processingTime);
+                
+                // Update user profile
+                this.updateUserProfile(message);
+            }
+
+            addMessage(text, sender, confidence = null) {
+                const chatArea = document.getElementById('chatArea');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                let confidenceHtml = '';
+                if (confidence !== null) {
+                    confidenceHtml = `
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${confidence}%"></div>
+                        </div>
+                        <small style="color: #666; margin-top: 5px; display: block;">Confidence: ${confidence}%</small>
+                    `;
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${text}
+                        ${confidenceHtml}
+                    </div>
+                `;
+                
+                chatArea.appendChild(messageDiv);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            showTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                typingIndicator.style.display = 'flex';
+                
+                const chatArea = document.getElementById('chatArea');
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                typingIndicator.style.display = 'none';
+            }
+
+            async simulateProcessing() {
+                // Simulate realistic processing time
+                const processingTime = Math.random() * 1000 + 500;
+                await new Promise(resolve => setTimeout(resolve, processingTime));
+            }
+
+            generateResponse(message) {
+                const cleanMessage = message.toLowerCase().trim();
+                
+                // Intent recognition with context awareness
+                const intent = this.recognizeIntent(cleanMessage);
+                
+                // Sentiment analysis
+                const sentiment = this.analyzeSentiment(cleanMessage);
+                
+                // Context-aware response generation
+                let selectedResponse = this.getContextualResponse(intent, sentiment, cleanMessage);
+                
+                // Add personality touches based on conversation history
+                selectedResponse = this.addPersonalityTouches(selectedResponse, intent, sentiment);
+                
+                // Calculate confidence based on pattern matching and sentiment
+                const confidence = this.calculateConfidence(cleanMessage, intent, sentiment);
+                
+                // Store conversation
+                this.conversationHistory.push({
+                    user: message,
+                    bot: selectedResponse,
+                    intent: intent,
+                    sentiment: sentiment,
+                    confidence: confidence,
+                    timestamp: new Date()
+                });
+                
+                return {
+                    text: selectedResponse,
+                    confidence: confidence,
+                    intent: intent,
+                    sentiment: sentiment
+                };
+            }
+
+            getContextualResponse(intent, sentiment, message) {
+                const responses = this.knowledgeBase[intent].responses;
+                let selectedResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                // Add contextual awareness based on previous conversations
+                if (this.conversationHistory.length > 0) {
+                    const lastIntent = this.conversationHistory[this.conversationHistory.length - 1].intent;
+                    
+                    // If user keeps asking about same topic, vary the response
+                    if (lastIntent === intent && this.conversationHistory.length > 1) {
+                        const contextualAddons = [
+                            " I love that you're diving deeper into this!",
+                            " You're really getting into the good stuff now!",
+                            " I can tell this topic really interests you!",
+                            " Great follow-up question!",
+                            " Now we're having a real conversation!"
+                        ];
+                        selectedResponse += contextualAddons[Math.floor(Math.random() * contextualAddons.length)];
+                    }
+                }
+                
+                return selectedResponse;
+            }
+
+            addPersonalityTouches(response, intent, sentiment) {
+                // Add empathetic responses based on sentiment
+                if (sentiment === 'negative') {
+                    const empathyPhrases = [
+                        "I totally get that. ",
+                        "That sounds challenging. ",
+                        "I hear you on that. ",
+                        "Yeah, that can be tough. "
+                    ];
+                    return empathyPhrases[Math.floor(Math.random() * empathyPhrases.length)] + response;
+                }
+                
+                if (sentiment === 'positive') {
+                    const enthusiasticPhrases = [
+                        "I love your enthusiasm! ",
+                        "That's the spirit! ",
+                        "Your excitement is contagious! ",
+                        "I'm getting excited just hearing about it! "
+                    ];
+                    return enthusiasticPhrases[Math.floor(Math.random() * enthusiasticPhrases.length)] + response;
+                }
+                
+                return response;
+            }
+
+            recognizeIntent(message) {
+                let bestMatch = 'default';
+                let bestScore = 0;
+                
+                for (const [intent, data] of Object.entries(this.knowledgeBase)) {
+                    if (intent === 'default') continue;
+                    
+                    let score = 0;
+                    for (const pattern of data.patterns) {
+                        if (message.includes(pattern)) {
+                            score += pattern.length; // Longer patterns get higher scores
+                        }
+                    }
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = intent;
+                    }
+                }
+                
+                return bestMatch;
+            }
+
+            analyzeSentiment(message) {
+                let positiveScore = 0;
+                let negativeScore = 0;
+                let emotionalScore = 0;
+                
+                const words = message.split(' ');
+                
+                for (const word of words) {
+                    if (this.sentimentLexicon.positive.includes(word)) {
+                        positiveScore++;
+                    } else if (this.sentimentLexicon.negative.includes(word)) {
+                        negativeScore++;
+                    } else if (this.sentimentLexicon.emotional && this.sentimentLexicon.emotional.includes(word)) {
+                        emotionalScore++;
+                    }
+                }
+                
+                // Check for emotional expressions
+                if (emotionalScore > 0) {
+                    return 'emotional';
+                }
+                
+                if (positiveScore > negativeScore) return 'positive';
+                if (negativeScore > positiveScore) return 'negative';
+                return 'neutral';
+            }
+
+            calculateConfidence(message, intent, sentiment) {
+                let confidence = 60; // Base confidence
+                
+                // Intent matching confidence
+                if (intent !== 'default') {
+                    const patterns = this.knowledgeBase[intent].patterns;
+                    for (const pattern of patterns) {
+                        if (message.includes(pattern)) {
+                            confidence += 10;
+                        }
+                    }
+                }
+                
+                // Sentiment clarity boosts confidence
+                if (sentiment !== 'neutral') {
+                    confidence += 10;
+                }
+                
+                // Conversation history boosts confidence
+                if (this.conversationHistory.length > 0) {
+                    confidence += 5;
+                }
+                
+                // Cap at 95% to seem realistic
+                return Math.min(confidence, 95);
+            }
+
+            updateStats(confidence, processingTime) {
+                this.responseCount++;
+                
+                document.getElementById('responseCount').textContent = this.responseCount;
+                document.getElementById('confidenceScore').textContent = `${confidence}%`;
+                document.getElementById('processingTime').textContent = `${processingTime}ms`;
+            }
+
+            updateUserProfile(message) {
+                this.userProfile.interactionCount++;
+                
+                // Extract potential interests
+                const techWords = ['python', 'javascript', 'coding', 'programming', 'ai', 'ml'];
+                const careerWords = ['job', 'career', 'resume', 'interview'];
+                
+                for (const word of techWords) {
+                    if (message.toLowerCase().includes(word) && !this.userProfile.interests.includes('technology')) {
+                        this.userProfile.interests.push('technology');
+                    }
+                }
+                
+                for (const word of careerWords) {
+                    if (message.toLowerCase().includes(word) && !this.userProfile.interests.includes('career')) {
+                        this.userProfile.interests.push('career');
+                    }
+                }
+            }
+        }
+
+        // Initialize the chatbot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AIchatbot();
+        });
+    </script>
+</body>
+</html>
